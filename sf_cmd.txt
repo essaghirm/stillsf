@@ -2,6 +2,8 @@ php bin/console doctrine:database:create
 
 Creating an Entity Class:
 -------------------------
+	php bin/console doctrine:database:drop --force
+	php bin/console doctrine:database:create
 	php bin/console make:entity
 	php bin/console make:entity --regenerate
 	php bin/console doctrine:migrations:diff
