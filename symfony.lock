@@ -161,6 +161,9 @@
             "ref": "e921bdbfe20cdefa3b82f379d1cd36df1bc8d115"
         }
     },
+    "symfony/form": {
+        "version": "v3.4.14"
+    },
     "symfony/framework-bundle": {
         "version": "3.3",
         "recipe": {
@@ -179,6 +182,9 @@
     "symfony/inflector": {
         "version": "v3.4.14"
     },
+    "symfony/intl": {
+        "version": "v3.4.14"
+    },
     "symfony/lts": {
         "version": "v3"
     },
@@ -191,10 +197,16 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/options-resolver": {
+        "version": "v3.4.14"
+    },
     "symfony/orm-pack": {
         "version": "v1.0.5"
     },
     "symfony/polyfill-apcu": {
+        "version": "v1.9.0"
+    },
+    "symfony/polyfill-intl-icu": {
         "version": "v1.9.0"
     },
     "symfony/polyfill-mbstring": {
@@ -218,11 +230,26 @@
             "ref": "ba769b98463f9d5f3d907db32bb64337d1e62ecb"
         }
     },
+    "symfony/security-core": {
+        "version": "v3.4.14"
+    },
+    "symfony/security-csrf": {
+        "version": "v3.4.14"
+    },
     "symfony/serializer": {
         "version": "v3.4.14"
     },
     "symfony/stopwatch": {
         "version": "v3.4.14"
+    },
+    "symfony/translation": {
+        "version": "3.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.3",
+            "ref": "6bcd6c570c017ea6ae5a7a6a027c929fd3542cd8"
+        }
     },
     "symfony/twig-bridge": {
         "version": "v3.4.14"
@@ -235,6 +262,9 @@
             "version": "3.3",
             "ref": "f75ac166398e107796ca94cc57fa1edaa06ec47f"
         }
+    },
+    "symfony/validator": {
+        "version": "v3.4.14"
     },
     "symfony/var-dumper": {
         "version": "v3.4.14"

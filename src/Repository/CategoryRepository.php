@@ -58,6 +58,7 @@ class CategoryRepository extends ServiceEntityRepository
 
         $entityManager->persist($category);
         $entityManager->flush();
+        return $category;
     }
 
     public function deleteCategory($id)
