@@ -13,8 +13,6 @@ class RelationType extends AbstractType
     {
         $builder
             ->add('occupation')
-            ->add('contact')
-            ->add('friend')
         ;
     }
 

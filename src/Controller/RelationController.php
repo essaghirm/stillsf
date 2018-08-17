@@ -3,12 +3,20 @@
 namespace App\Controller;
 
 use App\Entity\Relation;
+use App\Entity\Contact;
 use App\Form\RelationType;
 use App\Repository\RelationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 
 /**
  * @Route("/relation")
@@ -26,24 +34,32 @@ class RelationController extends Controller
     /**
      * @Route("/new", name="relation_new", methods="POST")
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ValidatorInterface $validator): Response
     {
         $relation = new Relation();
+        $data = json_decode($request->getContent(), true);       
+        
         $form = $this->createForm(RelationType::class, $relation);
-        $form->handleRequest($request);
+        $form->submit($data);
+        $relation->setContact($this->getDoctrine()->getRepository(Contact::class)->find($data['contact_id']));
+        $relation->setFriend($this->getDoctrine()->getRepository(Contact::class)->find($data['friend_id']));
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($relation);
-            $em->flush();
+        $errors = $validator->validate($relation);
 
-            return $this->redirectToRoute('relation_index');
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+            return new JsonResponse($errorsString);
         }
 
-        return $this->render('relation/new.html.twig', [
-            'relation' => $relation,
-            'form' => $form->createView(),
-        ]);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($relation);
+        $em->flush();
+
+        dump($relation);
+        die();
+
+        return $this->redirectToRoute('relation_index');
+        return $this->redirectToRoute('relation_show', array('id' => $relation->getId()));
     }
 
     /**

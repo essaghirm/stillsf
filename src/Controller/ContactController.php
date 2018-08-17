@@ -32,7 +32,7 @@ class ContactController extends Controller
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe'));
+        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'created'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {
@@ -83,6 +83,11 @@ class ContactController extends Controller
      */
     public function show(Contact $contact): Response
     {
+        $return = [];
+        $return['contact'] = $contact;
+        $return['relations'] = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
+        $return['categories'] = $this->getDoctrine()->getRepository(Contact::class)->getCategories($contact->getCategory()->getId());
+
 
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
@@ -91,19 +96,19 @@ class ContactController extends Controller
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {
-            // return $object->getId();
+            // return $objec t->getId();
         });
         $normalizers = array($normalizer);
         $serializer = new Serializer($normalizers, $encoders);
 
-        $jsonContent = $serializer->serialize($contact, 'json');
+        $jsonContent = $serializer->serialize($return, 'json');
         $response = new Response($jsonContent);
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
 
     /**
-     * @Route("/{id}/edit", name="contact_edit", methods="GET|POST")
+     * @Route("/{id}", name="contact_edit", methods="PUT")
      */
     public function edit(Request $request, Contact $contact): Response
     {

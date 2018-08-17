@@ -11,3 +11,5 @@ Creating an Entity Class:
 
 
 php bin/console make:crud
+
+App\Entity\Contact

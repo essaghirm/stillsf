@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Contact;
+use App\Entity\Relation;
+use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -19,32 +21,64 @@ class ContactRepository extends ServiceEntityRepository
         parent::__construct($registry, Contact::class);
     }
 
-//    /**
-//     * @return Contact[] Returns an array of Contact objects
-//     */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
+    /**
+    * @return Contact[] Returns an array of Contact objects
+    */
+    public function getRelations($value){
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        $friends = $qb->select('r')
+            ->from('App\Entity\Relation', 'r')
+            ->innerJoin('App\Entity\Contact', 'c')
+            ->andWhere('r.contact = :val OR r.friend = :val')
             ->setParameter('val', $value)
             ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+            ->getResult();
 
-    /*
-    public function findOneBySomeField($value): ?Contact
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $ids = [];
+
+        foreach ($friends as $k => $f) {
+            if($f->getFriend()->getId() == $value){
+                $ids[] = $f->getContact()->getId(); 
+            }else{
+               $ids[] = $f->getFriend()->getId();   
+            }       
+        }
+        $ids = '('.implode(',', $ids).')';
+
+        // echo $ids;
+        // die();
+
+        return $query = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Contact c
+            WHERE c.id IN $ids"
+        )->getResult();
     }
+
+    /**
+    * @return Category[] Returns an array of Category objects
     */
+    public function getCategories($id){
+
+        $child = $query = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.id = $id"
+        )->getOneOrNullResult();
+
+        $right = $child->getRgt();
+        $left = $child->getLft();
+
+        $categories = $query = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.lft < $left and c.rgt > $right ORDER BY c.lft ASC"
+        )->getResult();
+
+        dump($categories);
+        die();
+        
+    }
 }
