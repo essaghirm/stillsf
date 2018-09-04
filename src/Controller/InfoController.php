@@ -48,12 +48,14 @@ class InfoController extends Controller
     }
 
     /**
-     * @Route("/new", name="info_new", methods="GET|POST")
+     * @Route("/new", name="info_new", methods="POST")
      */
     public function new(Request $request, ValidatorInterface $validator): Response
     {
         $info = new Info();
-        $data = json_decode($request->getContent(), true);       
+        $data = json_decode($request->getContent(), true);
+        // dump($data);
+        // die();      
         
         $form = $this->createForm(InfoType::class, $info);
         $form->submit($data);
@@ -70,8 +72,11 @@ class InfoController extends Controller
         $em->persist($info);
         $em->flush();
 
-        return $this->redirectToRoute('info_index');
-        return $this->redirectToRoute('info_show', array('id' => $info->getId()));
+        // die('ok');
+
+        return $this->forward('App\Controller\ContactController::show', array(
+            'id'  => $data['contact_id']
+        ));
     }
 
     /**

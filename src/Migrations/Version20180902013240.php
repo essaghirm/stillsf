@@ -8,14 +8,14 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20180813181026 extends AbstractMigration
+final class Version20180902013240 extends AbstractMigration
 {
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('CREATE UNIQUE INDEX IDX_UNQ_CONTACT_FRIEND ON relation (contact_id, friend_id)');
+        $this->addSql('ALTER TABLE contact CHANGE fname fname VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema) : void
@@ -23,6 +23,6 @@ final class Version20180813181026 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('DROP INDEX IDX_UNQ_CONTACT_FRIEND ON relation');
+        $this->addSql('ALTER TABLE contact CHANGE fname fname VARCHAR(255) NOT NULL COLLATE utf8mb4_unicode_ci');
     }
 }

@@ -24,8 +24,9 @@ class ContactsController extends Controller
      * @Route("/", name="contacts")
      */
     public function index(){
-        // $number = random_int(0, 100);
-
+        $number = random_int(0, 100);
+        dump($number);
+        die();
         // you can fetch the EntityManager via $this->getDoctrine()
         // or you can add an argument to your action: index(EntityManagerInterface $entityManager)
         $em = $this->getDoctrine()->getManager();

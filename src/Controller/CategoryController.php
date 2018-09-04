@@ -24,11 +24,37 @@ class CategoryController extends Controller
      */
     public function index(CategoryRepository $categoryRepository): Response
     {
-        $categories = $categoryRepository->findAll();
+        $categories = $categoryRepository->findBy(array('lvl' => 1));
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('contacts'));
+        $normalizer->setIgnoredAttributes(array('contacts', 'parent', 'children'));
+
+        // Add Circular reference handler
+        $normalizer->setCircularReferenceHandler(function ($object) {
+            // return $object->getId();
+        });
+        $normalizers = array($normalizer);
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $jsonContent = $serializer->serialize($categories, 'json');
+        $response = new Response($jsonContent);
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+
+    /**
+     * @Route("/{id}/{lvl}", name="category_by_lvl", methods="GET")
+     */
+    public function byLvl($id, $lvl): Response
+    {
+
+        $categoryRepository = $this->getDoctrine()->getRepository(Category::class);
+        $categories = $categoryRepository->findBy(array('lvl' => $lvl, 'parent' => $id));
+        $encoders = array(new JsonEncoder());
+        $normalizer = new ObjectNormalizer();
+        $normalizer->setCircularReferenceLimit(0);
+        $normalizer->setIgnoredAttributes(array('contacts', 'parent', 'children'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {
@@ -48,26 +74,10 @@ class CategoryController extends Controller
      */
     public function new(Request $request): Response
     {
-        /*$category = new Category();
-        $form = $this->createForm(CategoryType::class, $category);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($category);
-            $em->flush();
-
-            return $this->redirectToRoute('category_index');
-        }
-
-        return $this->render('category/new.html.twig', [
-            'category' => $category,
-            'form' => $form->createView(),
-        ]);*/
-        $data = json_decode($request->getContent(), true);  
+        $data = json_decode($request->getContent(), true); 
         $category = $this->getDoctrine()
         ->getRepository(Category::class)
-        ->insertCategory($data['parente'], $data['title']);
+        ->insertCategory($data['parent'], $data['title']);
         return $this->redirectToRoute('category_show', array('id' => $category->getId()));
     }
 
@@ -76,11 +86,10 @@ class CategoryController extends Controller
      */
     public function show(Category $category): Response
     {
-        // return $this->render('category/show.html.twig', ['category' => $category]);
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('contacts'));
+        $normalizer->setIgnoredAttributes(array('contacts', 'parent', 'children'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {

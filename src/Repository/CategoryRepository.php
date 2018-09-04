@@ -19,7 +19,7 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function insertCategory($parent_id, $title){
+    public function insertCategory($parent_id, $title, $old_id){
 
         // $parent = $this->createQueryBuilder('c')
         //     ->andWhere('c.id = :val')
@@ -30,12 +30,15 @@ class CategoryRepository extends ServiceEntityRepository
         $entityManager = $this->getEntityManager();
 
         $query = $entityManager->createQuery(
-            'SELECT c.rgt
+            'SELECT c.rgt, c.lvl, c.id
             FROM App\Entity\Category c
             WHERE c.id = :id'
         )->setParameter('id', $parent_id)
         ->setMaxResults(1);
         $parent = $query->getOneOrNullResult();
+
+        // dump($parent);
+        // die();
 
         $updateRight = $entityManager->createQuery(
             'UPDATE App\Entity\Category c
@@ -55,6 +58,13 @@ class CategoryRepository extends ServiceEntityRepository
         $category->setTitle($title);
         $category->setLft($parent['rgt']);
         $category->setRgt($parent['rgt']+1);
+        $category->setLvl($parent['lvl']+1);
+        $category->setOldId($old_id);
+        $category->setParent($entityManager->getRepository(Category::class)->find($parent_id));
+
+        // dump($category);
+        // die();
+
 
         $entityManager->persist($category);
         $entityManager->flush();

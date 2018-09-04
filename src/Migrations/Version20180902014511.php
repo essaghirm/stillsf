@@ -8,14 +8,14 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20180813173506 extends AbstractMigration
+final class Version20180902014511 extends AbstractMigration
 {
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE relation CHANGE contact_id contact_id INT NOT NULL, CHANGE friend_id friend_id INT NOT NULL');
+        $this->addSql('ALTER TABLE info CHANGE label label VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema) : void
@@ -23,6 +23,6 @@ final class Version20180813173506 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE relation CHANGE contact_id contact_id INT DEFAULT NULL, CHANGE friend_id friend_id INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE info CHANGE label label VARCHAR(255) NOT NULL COLLATE utf8mb4_unicode_ci');
     }
 }

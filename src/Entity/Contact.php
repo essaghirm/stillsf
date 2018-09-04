@@ -19,7 +19,7 @@ class Contact
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $fname;
 
@@ -34,7 +34,7 @@ class Contact
     private $web_site;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $city;
 
@@ -44,9 +44,24 @@ class Contact
     private $notes;
 
     /**
-     * @ORM\Column(type="string", length=25)
+     * @ORM\Column(type="string", length=25, nullable=true)
      */
     private $type;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $email;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $mobile;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $landline;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -274,4 +289,41 @@ class Contact
 
         return $this;
     }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getMobile(): ?string
+    {
+        return $this->mobile;
+    }
+
+    public function setMobile(?string $mobile): self
+    {
+        $this->mobile = $mobile;
+
+        return $this;
+    }
+
+    public function getLandline(): ?string
+    {
+        return $this->landline;
+    }
+
+    public function setLandline(?string $landline): self
+    {
+        $this->landline = $landline;
+
+        return $this;
+    }
+
 }

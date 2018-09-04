@@ -22,12 +22,12 @@ class Info
     private $type;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $label;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true, nullable=false)
+     * @ORM\Column(type="string", length=255, unique=false, nullable=false)
      */
     private $value;
 

@@ -35,6 +35,10 @@ class ContactRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
+        
+        if(empty($friends)){
+            return null;
+        }
 
         $ids = [];
 
@@ -50,11 +54,19 @@ class ContactRepository extends ServiceEntityRepository
         // echo $ids;
         // die();
 
-        return $query = $this->getEntityManager()->createQuery(
+        $contacts = $this->getEntityManager()->createQuery(
             "SELECT c
             FROM App\Entity\Contact c
-            WHERE c.id IN $ids"
+            WHERE c.id IN $ids and c.type like 'contact'"
         )->getResult();
+
+        $companies = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Contact c
+            WHERE c.id IN $ids and c.type like 'company'"
+        )->getResult();
+
+        return array('contacts' => $contacts, 'companies' => $companies);
     }
 
     /**
@@ -74,11 +86,164 @@ class ContactRepository extends ServiceEntityRepository
         $categories = $query = $this->getEntityManager()->createQuery(
             "SELECT c
             FROM App\Entity\Category c
-            WHERE c.lft < $left and c.rgt > $right ORDER BY c.lft ASC"
+            WHERE c.lft <= $left and c.rgt >= $right ORDER BY c.lft ASC"
         )->getResult();
+        return $categories;
 
-        dump($categories);
-        die();
+        // dump($categories);
+        // die();
         
+    }
+
+    /**
+    * @return Contact[] Returns an array of Contact objects
+    */
+    public function getContactsById($value, $criteria){
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $category = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.id = ".$criteria['category_id']
+        )->getOneOrNullResult();
+
+        if($category != null){
+            $right = $category->getRgt();
+            $left = $category->getLft();
+        }
+
+        dump($left, $right);
+
+        $result = $qb->select('c')
+        ->from('App\Entity\Contact', 'c')
+        ->innerJoin('App\Entity\Category', 'cat')
+        ->andWhere('c.id like :value AND cat.lft >= :lft AND cat.rgt <= :rgt')
+        // ->andWhere('c.type LIKE :type')
+        // ->andWhere('cat.lft >= :lft AND cat.rgt <= :rgt')
+        ->orderBy('c.id', 'ASC')
+        ->setParameter('lft', $left)
+        ->setParameter('rgt', $right)
+        ->setParameter('value', $value.'%')
+        // ->setParameter('type', $criteria['type'])
+        ->getQuery()
+        ->getResult();
+
+        return $result;
+
+        // dump($result);
+        // die();
+
+
+    }
+
+    /**
+    * @return Contact[] Returns an array of Contact objects
+    */
+    public function getContactsByPhone($value, $criteria){
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $category = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.id = ".$criteria['category_id']
+        )->getOneOrNullResult();
+
+        if($category != null){
+            $right = $category->getRgt();
+            $left = $category->getLft();
+        }
+
+        $result = $qb->select('c')
+        ->from('App\Entity\Contact', 'c')
+        ->innerJoin('App\Entity\Category', 'cat')
+        ->andWhere('c.id like :value')
+        // ->andWhere('c.type LIKE :type')
+        ->andWhere('cat.lft >= :lft AND cat.rgt <= :rgt')
+        ->orderBy('c.id', 'ASC')
+        ->setParameter('lft', $left)
+        ->setParameter('rgt', $right)
+        ->setParameter('value', $value.'%')
+        // ->setParameter('type', $criteria['type'])
+        ->getQuery()
+        ->getResult();
+
+        return $result;
+
+        // dump($result);
+        // die();
+
+
+    }
+
+    /**
+    * @return Contact[] Returns an array of Contact objects
+    */
+    public function getContactsByName($value, $criteria){
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        // $contactRepo = $this->getRepository(Contact::class);
+
+
+        $category = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.id = ".$criteria['category_id']
+        )->getOneOrNullResult();
+
+        if($category != null){
+            $right = $category->getRgt();
+            $left = $category->getLft();
+        }
+
+        // dump($left, $right);
+
+        
+
+        // $contacts = $qb->select('c')
+        //     ->from('App\Entity\Contact', 'c')
+        //     ->innerJoin('App\Entity\Category', 'cat')
+        //     ->andWhere('r.contact = :val OR r.friend = :val')
+        //     ->setParameter('val', $value)
+        //     ->orderBy('c.id', 'ASC')
+        //     ->getQuery()
+        //     ->getResult();
+
+            $name = explode(' ', $value);
+
+            if(sizeof($name) > 1){
+                $result = $qb->select('c')
+                ->from('App\Entity\Contact', 'c')
+                ->innerJoin('App\Entity\Category', 'cat')
+                ->andWhere('c.fname LIKE :value OR c.lname like :value')
+                ->orWhere('c.lname like :n1 AND c.fname like :n2')
+                ->orWhere('c.fname like :n1 AND c.lname like :n2')
+                // ->andWhere('c.type LIKE :type')
+                ->andWhere('cat.lft >= :lft AND cat.rgt <= :rgt')
+                ->orderBy('c.id', 'ASC')
+                ->setParameter('lft', $left)
+                ->setParameter('rgt', $right)
+                ->setParameter('value', $value.'%')
+                ->setParameter('n1', $name[0].'%')
+                ->setParameter('n2', $name[1].'%')
+                // ->setParameter('type', $criteria['type'])
+                ->getQuery()
+                ->getResult();
+            }else{
+                $result = $qb->select('c')
+                ->from('App\Entity\Contact', 'c')
+                ->innerJoin('App\Entity\Category', 'cat')
+                ->andWhere('c.fname LIKE :value')
+                ->orWhere('c.lname like :value')
+                ->orWhere('c.fname like :value')
+                // ->andWhere('c.type LIKE :type')
+                ->andWhere('cat.lft >= :lft AND cat.rgt <= :rgt')
+                ->orderBy('c.id', 'ASC')
+                ->setParameter('lft', $left)
+                ->setParameter('rgt', $right)
+                ->setParameter('value', $value.'%')
+                // ->setParameter('type', $criteria['type'])
+                ->getQuery()
+                ->getResult();
+            }
+
+            return $result;
     }
 }
