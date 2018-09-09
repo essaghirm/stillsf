@@ -32,6 +32,11 @@ class Info
     private $value;
 
     /**
+     * @ORM\Column(type="boolean", options={"default":"0"})
+     */
+    private $status;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Contact", inversedBy="infos")
      * @ORM\JoinColumn(name="contact_id", referencedColumnName="id")
      */
@@ -86,6 +91,18 @@ class Info
     public function setContact(?Contact $contact): self
     {
         $this->contact = $contact;
+
+        return $this;
+    }
+
+    public function getStatus(): ?bool
+    {
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

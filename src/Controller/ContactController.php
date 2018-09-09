@@ -4,16 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Contact;
 use App\Entity\Category;
+use App\Entity\Relation;
 use App\Form\ContactType;
 use App\Repository\ContactRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -34,18 +34,6 @@ class ContactController extends Controller
 
         foreach ($contacts as $c) {
             foreach ($c->getInfos() as $i) {
-                // if($i->getType() == "LandLine" || $i->getType() == "Mobile"){
-                //     $c->setPhone($i->getValue());
-                // }
-
-                // if($i->getType() == "Email"){
-                //     $c->setEmail($i->getValue());
-                // }
-
-                // if($i->getType() == "Email"){
-                //     $c->setEmail($i->getValue());
-                // }
-
                 switch ($i->getType()) {
                     case 'LandLine':
                         $c->setLandLine($i->getValue());
@@ -59,8 +47,6 @@ class ContactController extends Controller
                 }
             }
         }
-
-        // die();
 
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
@@ -91,9 +77,7 @@ class ContactController extends Controller
         $form = $this->createForm(ContactType::class, $contact);
         $form->submit($data);
         $contact->setCreated(new \DateTime());
-        // dump($data);
-        // dump($contact);
-        // die();
+
         $contact->setCategory($this->getDoctrine()->getRepository(Category::class)->find($data['category']));
 
         $errors = $validator->validate($contact);
@@ -110,9 +94,7 @@ class ContactController extends Controller
         $response = $this->forward('App\Controller\ContactController::show', array(
             'id'  => $contact
         ));
-    
-        // ... further modify the response or return it directly
-    
+        
         return $response;
     }
 
@@ -121,7 +103,6 @@ class ContactController extends Controller
      */
     public function show(Contact $contact): Response
     {
-        // dump($contact);
         $return = [];
         $return['contact'] = $contact;
         $return['relations'] = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
@@ -151,9 +132,7 @@ class ContactController extends Controller
      */
     public function details(Contact $contact): Response
     {
-        // dump($contact);
         $return = [];
-        // $return['contact'] = $contact;
         $return['relations'] = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
         $return['categories'] = $this->getDoctrine()->getRepository(Contact::class)->getCategories($contact->getCategory()->getId());
 
@@ -180,20 +159,29 @@ class ContactController extends Controller
      * @Route("/{id}", name="contact_edit", methods="PUT")
      */
     public function edit(Request $request, Contact $contact): Response
-    {
-        $form = $this->createForm(ContactType::class, $contact);
-        $form->handleRequest($request);
+    {        
+        $data = json_decode($request->getContent(), true);      
+        
+        $contact->setFname($data['fname']);
+        if($data['type'] == 'company'){
+            $contact->setFname("");
+        }
+        $contact->setLname($data['lname']);
+        $contact->setWebSite($data['web_site']);
+        $contact->setNotes($data['notes']);
+        $contact->setType($data['type']);
+        $contact->setCity($data['city']);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('contact_edit', ['id' => $contact->getId()]);
+        if($contact->getCategory()->getId() != $data['category'] && is_numeric($data['category']) && isset($data['category'])){
+            $contact->setCategory($this->getDoctrine()->getRepository(Category::class)->find($data['category']));
         }
 
-        return $this->render('contact/edit.html.twig', [
-            'contact' => $contact,
-            'form' => $form->createView(),
-        ]);
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+
+        return $this->forward('App\Controller\ContactController::show', array(
+            'id'  => $contact->getId()
+        ));
     }
 
     /**
@@ -201,13 +189,32 @@ class ContactController extends Controller
      */
     public function delete(Request $request, Contact $contact): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$contact->getId(), $request->request->get('_token'))) {
-            $em = $this->getDoctrine()->getManager();
-            $em->remove($contact);
-            $em->flush();
-        }
 
-        return $this->redirectToRoute('contact_index');
+        $relations = $this->getDoctrine()->getRepository(Contact::class)->deleteRelationForContact($contact->getId());
+        $infos = $this->getDoctrine()->getRepository(Contact::class)->deleteInfosForContact($contact->getId());
+        // dump($relations);
+        // die();
+
+        $em = $this->getDoctrine()->getManager();
+        
+        $em->remove($contact);
+        $em->flush();
+
+        return new JsonResponse("ok");
+    }
+
+    /**
+     * @Route("/relation/{contact}/{friend}", name="contact_delete_relation", methods="DELETE")
+     */
+    public function deleteRelationWithContact(Request $request, $contact, $friend): Response
+    {
+
+        $r = $this->getDoctrine()->getRepository(Contact::class)->deleteRelationWithContact($contact, $friend);
+        // dump($r);
+        // die();
+        return $this->forward('App\Controller\ContactController::show', array(
+            'id'  => $contact
+        ));
     }
 
     /**
@@ -304,18 +311,30 @@ class ContactController extends Controller
                 break;
 
             case 'fulltext':
-                $contacts = $contactRepo->getContactsByText($value, $criteria);
+                $contacts = $contactRepo->getContactsByFullText($value, $criteria);
                 break;
-            
-            default:
-                # code...
-                break;
+        }
+
+        foreach ($contacts as $c) {
+            foreach ($c->getInfos() as $i) {
+                switch ($i->getType()) {
+                    case 'LandLine':
+                        $c->setLandLine($i->getValue());
+                        break;
+                    case 'Mobile':
+                        $c->setMobile($i->getValue());
+                        break;
+                    case 'Email':
+                        $c->setEmail($i->getValue());
+                        break;
+                }
+            }
         }
 
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'contacts', 'category', 'children', 'parent'));
+        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'contacts', 'category', 'children', 'parent', 'created', '__initializer__', '__cloner__', '__isInitialized__'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {

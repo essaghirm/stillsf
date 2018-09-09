@@ -54,12 +54,26 @@ class InfoController extends Controller
     {
         $info = new Info();
         $data = json_decode($request->getContent(), true);
-        // dump($data);
-        // die();      
-        
+
+               
         $form = $this->createForm(InfoType::class, $info);
         $form->submit($data);
         $info->setContact($this->getDoctrine()->getRepository(Contact::class)->find($data['contact_id']));
+
+        $_infos = $this->getDoctrine()->getRepository(Info::class)->findBy(array(
+            'contact' => $info->getContact(),
+            'type' => $data['type']
+        ));
+        // dump($data['default']);
+
+        if($data['status'] == true){
+            foreach ($_infos as $i) {
+                $i->setStatus(false);
+            }
+            $info->setStatus(true);
+        }elseif($data['status'] == false){
+            $info->setStatus(false);
+        }
 
         $errors = $validator->validate($info);
 
@@ -88,23 +102,38 @@ class InfoController extends Controller
     }
 
     /**
-     * @Route("/{id}/edit", name="info_edit", methods="GET|POST")
+     * @Route("/{id}", name="info_edit", methods="PUT")
      */
     public function edit(Request $request, Info $info): Response
     {
-        $form = $this->createForm(InfoType::class, $info);
-        $form->handleRequest($request);
+        $data = json_decode($request->getContent(), true);      
+        
+        $info->setLabel($data['label']);
+        $info->setValue($data['value']);
+        $info->setType($data['type']);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+        $_infos = $this->getDoctrine()->getRepository(Info::class)->findBy(array(
+            'contact' => $info->getContact(),
+            'type' => $data['type']
+        ));
+        // dump($data['default']);
 
-            return $this->redirectToRoute('info_edit', ['id' => $info->getId()]);
+        if($data['status'] == true){
+            foreach ($_infos as $i) {
+                $i->setStatus(false);
+            }
+            $info->setStatus(true);
+        }elseif($data['status'] == false){
+            $info->setStatus(false);
         }
+        
 
-        return $this->render('info/edit.html.twig', [
-            'info' => $info,
-            'form' => $form->createView(),
-        ]);
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+
+        return $this->forward('App\Controller\ContactController::show', array(
+            'id'  => $info->getContact()->getId()
+        ));
     }
 
     /**
@@ -112,12 +141,14 @@ class InfoController extends Controller
      */
     public function delete(Request $request, Info $info): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$info->getId(), $request->request->get('_token'))) {
-            $em = $this->getDoctrine()->getManager();
-            $em->remove($info);
-            $em->flush();
-        }
+        $contact_id = $info->getContact()->getId();
+        $em = $this->getDoctrine()->getManager();
+        
+        $em->remove($info);
+        $em->flush();
 
-        return $this->redirectToRoute('info_index');
+        return $this->forward('App\Controller\ContactController::show', array(
+            'id'  => $contact_id
+        ));
     }
 }
