@@ -28,9 +28,9 @@ class ContactController extends Controller
      */
     public function index(ContactRepository $contactRepository, $p): Response
     {
-        $nb=20;
-        $p = ($p-1)*$nb;
-        $contacts = $contactRepository->findBy(array(), array('id' => 'DESC'), $nb, $p);
+        $limit=40;
+        $offset = ($p-1)*$limit;
+        $contacts = $contactRepository->findBy(array(), array('id' => 'ASC'), $limit, $offset);
 
         foreach ($contacts as $c) {
             foreach ($c->getInfos() as $i) {
@@ -285,33 +285,34 @@ class ContactController extends Controller
     }
 
     /**
-     * @Route("/searchcontact/{searchType}/{value}", name="contact_serach", methods="POST")
+     * @Route("/searchcontact/{searchType}/{p}", name="contact_serach", methods="POST")
      */
-    public function searchContacts(Request $request, $searchType, $value): Response
+    public function searchContacts(Request $request, $searchType, $p): Response
     {
         $criteria = json_decode($request->getContent(), true); 
         // $criteria = [];
 
         // $return['relations'] = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
-
+        $limit=40;
+        $offset = ($p-1)*$limit;
         $contacts;
         $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
 
         switch ($searchType) {
             case 'name':
-                $contacts = $contactRepo->getContactsByName($value, $criteria);
+                $contacts = $contactRepo->getContactsByName($criteria['value'], $criteria, $offset, $limit);
                 break;
 
             case 'id':
-                $contacts = $contactRepo->getContactsById($value, $criteria);
+                $contacts = $contactRepo->getContactsById($criteria['value'], $criteria, $offset, $limit);
                 break;
 
             case 'phone':
-                $contacts = $contactRepo->getContactsByPhone($value, $criteria);
+                $contacts = $contactRepo->getContactsByPhone($criteria['value'], $criteria, $limit, $limit);
                 break;
 
             case 'fulltext':
-                $contacts = $contactRepo->getContactsByFullText($value, $criteria);
+                $contacts = $contactRepo->getContactsByFullText($criteria['value'], $criteria, $offset, $limit);
                 break;
         }
 

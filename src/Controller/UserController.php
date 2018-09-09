@@ -71,11 +71,44 @@ class UserController extends Controller
             return new JsonResponse($errorsString);
         }
 
+        $_user = $this->getDoctrine()->getEntityManager()->createQueryBuilder()->select('u')
+        ->from('App\Entity\User', 'u')
+        ->where('u.user_name like :user_name OR u.email like :user_name')
+        ->setParameter('user_name', $data['user_name'])
+        ->getQuery()->getOneOrNullResult();
+
+        if($_user){
+            $array = [];
+            $array['status'] = 'error';
+            $array['message'] = "Ce nom d'utilisateurou existe déjà";
+            return new JsonResponse($array);
+        }
+
         $em = $this->getDoctrine()->getManager();
         $em->persist($user);
         $em->flush();
 
-        return $this->forward('App\Controller\UserController::index');
+
+        // $encoders = array(new JsonEncoder());
+        // $normalizer = new ObjectNormalizer();
+        // $normalizer->setCircularReferenceLimit(0);
+        // $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'created', 'category'));
+
+        // // Add Circular reference handler
+        // $normalizer->setCircularReferenceHandler(function ($object) {
+        //     // return $object->getId();
+        // });
+        // $normalizers = array($normalizer);
+        // $serializer = new Serializer($normalizers, $encoders);
+
+        // $jsonContent = $serializer->serialize($user, 'json');
+        // $response = new Response($jsonContent);
+        // $response->headers->set('Content-Type', 'application/json');
+        // return $response;
+        $array = [];
+        $array['status'] = 'created';
+        $array['message'] = "Votre compte a bien été créé, contacter l'administrateur pour activé votre compte";
+        return new JsonResponse($array);
     }
 
     /**
@@ -126,9 +159,15 @@ class UserController extends Controller
             $response->headers->set('Content-Type', 'application/json');
             return $response;
         }elseif($user && $user->getStatus() == 0){
-            return new JsonResponse("Votre compte n'est pas encore activé, Merci de contacter l'administrateur !");
+            $array = [];
+            $array['status'] = 'error';
+            $array['message'] = "Votre compte n'est pas encore activé, Merci de contacter l'administrateur !";
+            return new JsonResponse($array);
         }else{
-            return new JsonResponse("Le nom d'utilisateur ou le mot de passe est incorrect !");
+            $array = [];
+            $array['status'] = 'error';
+            $array['message'] = "Le nom d'utilisateur ou le mot de passe est incorrect !";
+            return new JsonResponse($array);
         }
     }
 

@@ -125,55 +125,54 @@ class ContactRepository extends ServiceEntityRepository
     /**
     * @return Contact[] Returns an array of Contact objects
     */
-    public function getContactsById($id, $criteria){
-        $qb = $this->getEntityManager()->createQueryBuilder();
-        $category = $this->getEntityManager()->createQuery(
-            "SELECT c
-            FROM App\Entity\Category c
-            WHERE c.id = ".$criteria['category_id']
-        )->getOneOrNullResult();
+    public function getContactsById($id, $criteria, $offset, $limit){
+        $qb = $this->getEntityManager()->createQueryBuilder();        
 
-        
+        if(isset($criteria['category_id']) && is_numeric($criteria['category_id'])){
+            $qb = $this->getEntityManager()->createQueryBuilder();
+            $category = $this->getEntityManager()->createQuery(
+                "SELECT c
+                FROM App\Entity\Category c
+                WHERE c.id = ".$criteria['category_id']
+            )->getOneOrNullResult();
 
-        if($category != null){
-            $right = $category->getRgt();
-            $left = $category->getLft();
+            if($category != null){
+                $right = $category->getRgt();
+                $left = $category->getLft();
+            }
+
+            $categories = $this->getEntityManager()->createQueryBuilder()->select('cat')
+                        ->from('App\Entity\Category', 'cat')
+                        ->where('cat.lft >= :lft AND cat.rgt <= :rgt AND cat.lvl = 5')
+                        ->setParameter('lft', $left)
+                        ->setParameter('rgt', $right)
+                        ->getQuery()
+                        ->getResult();
+        }else{
+            $categories = null;
         }
 
-        $categories = $qb->select('cat')
-                    ->from('App\Entity\Category', 'cat')
-                    ->where('cat.lft >= :lft AND cat.rgt <= :rgt AND cat.lvl = 5')
-                    ->setParameter('lft', $left)
-                    ->setParameter('rgt', $right)
-                    ->getQuery()
-                    ->getResult();
-
-        // $result = $qb->select('c')
-        // ->from('App\Entity\Contact', 'c')
-        // // ->join('App\Entity\Category', 'cat')
-        // ->where('c.id like :id')
-        // ->andWhere('c.category IN (:categories)')
-        // // ->andWhere('cat.lft >= :lft AND cat.rgt <= :rgt')
-        // ->orderBy('c.id', 'ASC')
-        // // ->setParameter('lft', $left)
-        // // ->setParameter('rgt', $right)
-        // ->setParameter('id', $id.'%')
-        // ->setParameter('categories', $categories)
-        // ->getQuery();
-
-        $result = $this->getEntityManager()->createQuery(
-            "SELECT c FROM App\Entity\Contact c WHERE c.id like :id AND c.category IN (:ids)"
-        )
-        ->setParameter('id', $id.'%')
-        ->setParameter('ids', $categories);
-
-        return $result->getResult();
+        $result = $this->getEntityManager()->createQueryBuilder()->select('c')
+                    ->from('App\Entity\Contact', 'c')
+                    ->where('c.id like :id')
+                    ->setParameter('id', $id.'%');
+        if($categories != null){
+            $result->andWhere('c.category IN (:ids)')
+                    ->setParameter('ids', $categories);
+        }
+        if($criteria['type'] != null){
+            $result->andWhere('c.type like :type')
+                    ->setParameter('type', $criteria['type']);
+        }
+        $result->setFirstResult( $offset )
+        ->setMaxResults( $limit );
+        return $result->getQuery()->getResult();
     }
 
     /**
     * @return Contact[] Returns an array of Contact objects
     */
-    public function getContactsByPhone($value, $criteria){
+    public function getContactsByPhone($value, $criteria, $offset, $limit){
 
         $number = sprintf("%s %s %s",
 	              substr($value, 0, 3),
@@ -236,13 +235,16 @@ class ContactRepository extends ServiceEntityRepository
                     ->setParameter('type', $criteria['type']);
         }
 
+        $result->setFirstResult( $offset )
+        ->setMaxResults( $limit );
+
         return $result->getQuery()->getResult();
     }
 
     /**
     * @return Contact[] Returns an array of Contact objects
     */
-    public function getContactsByName($value, $criteria){
+    public function getContactsByName($value, $criteria, $offset, $limit){
         $qb = $this->getEntityManager()->createQueryBuilder();
 
         // $contactRepo = $this->getRepository(Contact::class);
@@ -294,7 +296,8 @@ class ContactRepository extends ServiceEntityRepository
                 $result->andWhere('c.type like :type')
                         ->setParameter('type', $criteria['type']);
             }
-    
+            $result->setFirstResult( $offset )
+            ->setMaxResults( $limit );
             return $result->getQuery()->getResult();
         }else{
             $result = $qb->select('c')
@@ -312,9 +315,12 @@ class ContactRepository extends ServiceEntityRepository
                 $result->andWhere('c.type like :type')
                         ->setParameter('type', $criteria['type']);
             }
-    
+            $result->setFirstResult( $offset )
+            ->setMaxResults( $limit );
             return $result->getQuery()->getResult();
         }
+
+        
 
         return $result;
     }
@@ -322,7 +328,7 @@ class ContactRepository extends ServiceEntityRepository
     /**
     * @return Contact[] Returns an array of Contact objects
     */
-    public function getContactsByFullText($value, $criteria){
+    public function getContactsByFullText($value, $criteria, $offset, $limit){
         $em = $this->getEntityManager();
 
         // $contactRepo = $this->getRepository(Contact::class);
@@ -385,6 +391,9 @@ class ContactRepository extends ServiceEntityRepository
             $result->andWhere('c.type like :type')
                     ->setParameter('type', $criteria['type']);
         }
+
+        $result->setFirstResult( $offset )
+            ->setMaxResults( $limit );
 
         return $result->getQuery()->getResult();
     }
