@@ -164,9 +164,12 @@ class ContactRepository extends ServiceEntityRepository
             $result->andWhere('c.type like :type')
                     ->setParameter('type', $criteria['type']);
         }
-        $result->setFirstResult( $offset )
-        ->setMaxResults( $limit );
-        return $result->getQuery()->getResult();
+        $array['total'] = sizeof($result->getQuery()->getResult());
+        $array['contacts'] = $result->setFirstResult( $offset )
+        ->setMaxResults( $limit )
+        ->getQuery()->getResult();
+
+        return $array;
     }
 
     /**
@@ -234,11 +237,12 @@ class ContactRepository extends ServiceEntityRepository
             $result->andWhere('c.type like :type')
                     ->setParameter('type', $criteria['type']);
         }
+        $array['total'] = sizeof($result->getQuery()->getResult());
+        $array['contacts'] = $result->setFirstResult( $offset )
+        ->setMaxResults( $limit )
+        ->getQuery()->getResult();
 
-        $result->setFirstResult( $offset )
-        ->setMaxResults( $limit );
-
-        return $result->getQuery()->getResult();
+        return $array;
     }
 
     /**
@@ -296,9 +300,12 @@ class ContactRepository extends ServiceEntityRepository
                 $result->andWhere('c.type like :type')
                         ->setParameter('type', $criteria['type']);
             }
-            $result->setFirstResult( $offset )
-            ->setMaxResults( $limit );
-            return $result->getQuery()->getResult();
+            $array['total'] = sizeof($result->getQuery()->getResult());
+            $array['contacts'] = $result->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+            ->getQuery()->getResult();
+
+            return $array;
         }else{
             $result = $qb->select('c')
             ->from('App\Entity\Contact', 'c')
@@ -315,9 +322,12 @@ class ContactRepository extends ServiceEntityRepository
                 $result->andWhere('c.type like :type')
                         ->setParameter('type', $criteria['type']);
             }
-            $result->setFirstResult( $offset )
-            ->setMaxResults( $limit );
-            return $result->getQuery()->getResult();
+            $array['total'] = sizeof($result->getQuery()->getResult());
+            $array['contacts'] = $result->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+            ->getQuery()->getResult();
+
+            return $array;
         }
 
         
@@ -392,9 +402,81 @@ class ContactRepository extends ServiceEntityRepository
                     ->setParameter('type', $criteria['type']);
         }
 
-        $result->setFirstResult( $offset )
-            ->setMaxResults( $limit );
+        $array['total'] = sizeof($result->getQuery()->getResult());
+        $array['contacts'] = $result->setFirstResult( $offset )
+        ->setMaxResults( $limit )
+        ->getQuery()->getResult();
 
-        return $result->getQuery()->getResult();
+        return $array;
+    }
+
+    /**
+    * @return Contact[] Returns an array of Contact objects
+    */
+    public function getContactsByTriangle($value, $criteria, $offset, $limit){
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        // $contactRepo = $this->getRepository(Contact::class);
+
+
+        $name = explode(' ', $value);
+
+        if(sizeof($name) > 1){
+            $result = $this->getEntityManager()->createQueryBuilder()->select('c')
+            ->from('App\Entity\Contact', 'c')
+            ->andWhere('c.fname LIKE :value OR c.lname like :value')
+            ->orWhere('c.lname like :n1 AND c.fname like :n2')
+            ->orWhere('c.fname like :n1 AND c.lname like :n2')
+            ->andWhere('c.type LIKE :type')
+            ->orderBy('c.lname', 'ASC')
+            ->setParameter('value', $value.'%')
+            ->setParameter('n1', $name[0].'%')
+            ->setParameter('n2', $name[1].'%')
+            ->setParameter('type', 'contact')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+            ->getQuery()->getResult();
+        }else{
+            $result = $qb->select('c')
+            ->from('App\Entity\Contact', 'c')
+            ->andWhere('c.fname LIKE :value')
+            ->orWhere('c.lname like :value')
+            ->orWhere('c.fname like :value')
+            ->andWhere('c.type LIKE :type')
+            ->orderBy('c.id', 'ASC')
+            ->setParameter('value', $value.'%')
+            ->setParameter('type', 'contact')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+            ->getQuery()->getResult();
+        }
+
+        $array = [];
+
+        if(sizeof($result) > 0){
+            foreach ($result as $key => $c) {
+                
+                $relations = $this->getRelations($c->getId());
+                if(sizeof($relations['contacts']) > 0 || sizeof($relations['companies']) > 0){
+                    $array[$key]['contact'] = $c;
+                    // $array[$key]['relations'] = $relations;
+                    foreach ($relations['contacts'] as $k => $r) {
+                        $array[$key]['relations'][$k] = $r;
+                    }
+                    foreach ($relations['companies'] as $k => $r) {
+                        $array[$key]['relations'][ sizeof($relations['contacts']) + $k] = $r;
+                    }
+                }else{
+                    continue;
+                }
+            }
+
+        }else{
+            return null;
+        }
+
+        // dump($array);die;
+
+        return $array;
     }
 }

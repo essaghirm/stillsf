@@ -300,37 +300,32 @@ class ContactController extends Controller
 
         switch ($searchType) {
             case 'name':
-                $contacts = $contactRepo->getContactsByName($criteria['value'], $criteria, $offset, $limit);
+                $result = $contactRepo->getContactsByName($criteria['value'], $criteria, $offset, $limit);
                 break;
 
             case 'id':
-                $contacts = $contactRepo->getContactsById($criteria['value'], $criteria, $offset, $limit);
+                $result = $contactRepo->getContactsById($criteria['value'], $criteria, $offset, $limit);
                 break;
 
             case 'phone':
-                $contacts = $contactRepo->getContactsByPhone($criteria['value'], $criteria, $limit, $limit);
+                $result = $contactRepo->getContactsByPhone($criteria['value'], $criteria, $offset, $limit);
                 break;
 
             case 'fulltext':
-                $contacts = $contactRepo->getContactsByFullText($criteria['value'], $criteria, $offset, $limit);
+                $result = $contactRepo->getContactsByFullText($criteria['value'], $criteria, $offset, $limit);
+                break;
+
+            case 'triangle':
+                $result = $contactRepo->getContactsByTriangle($criteria['value'], $criteria, $offset, $limit);
+                // dump($contacts);die;
+                $this->getDefaultInfoForTriangle($result);
                 break;
         }
 
-        foreach ($contacts as $c) {
-            foreach ($c->getInfos() as $i) {
-                switch ($i->getType()) {
-                    case 'LandLine':
-                        $c->setLandLine($i->getValue());
-                        break;
-                    case 'Mobile':
-                        $c->setMobile($i->getValue());
-                        break;
-                    case 'Email':
-                        $c->setEmail($i->getValue());
-                        break;
-                }
-            }
+        if($searchType != 'triangle'){
+            $this->getDefaultInfo($result['contacts']);
         }
+        
 
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
@@ -344,9 +339,110 @@ class ContactController extends Controller
         $normalizers = array($normalizer);
         $serializer = new Serializer($normalizers, $encoders);
 
-        $jsonContent = $serializer->serialize($contacts, 'json');
+        $jsonContent = $serializer->serialize($result, 'json');
         $response = new Response($jsonContent);
         $response->headers->set('Content-Type', 'application/json');
         return $response;
+    }
+
+    private function getDefaultInfo($contacts){
+        // foreach ($contacts as $c) {
+        //     foreach ($c->getInfos() as $i) {
+        //         switch ($i->getType()) {
+        //             case 'LandLine':
+        //                 $c->setLandLine($i->getValue());
+        //                 break;
+        //             case 'Mobile':
+        //                 $c->setMobile($i->getValue());
+        //                 break;
+        //             case 'Email':
+        //                 $c->setEmail($i->getValue());
+        //                 break;
+        //         }
+        //     }
+        // }
+
+        foreach ($contacts as $c) {
+            foreach ($c->getInfos() as $i) {
+                if($i->getType() != 'Mobile')
+                    continue;
+                
+                if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                    $c->setMobile($i->getValue());
+                    break;
+                }else{
+                    $c->setMobile($i->getValue());
+                }
+            }
+
+            foreach ($c->getInfos() as $i) {
+                if($i->getType() != 'Email')
+                    continue;
+                
+                if($i->getType() == 'Email' && $i->getStatus() == 1){
+                    $c->setEmail($i->getValue());
+                    break;
+                }else{
+                    $c->setEmail($i->getValue());
+                }
+            }
+        }
+    }
+
+    private function getDefaultInfoForTriangle($contacts){
+
+        foreach ($contacts as $contact) {
+            foreach ($contact['contact']->getInfos() as $i) {
+                if($i->getType() != 'Mobile')
+                    continue;
+                
+                if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                    $contact['contact']->setMobile($i->getValue());
+                    break;
+                }else{
+                    $contact['contact']->setMobile($i->getValue());
+                }
+            }
+    
+            foreach ($contact['contact']->getInfos() as $i) {
+                if($i->getType() != 'Email')
+                    continue;
+                
+                if($i->getType() == 'Email' && $i->getStatus() == 1){
+                    $contact['contact']->setEmail($i->getValue());
+                    break;
+                }else{
+                    $contact['contact']->setEmail($i->getValue());
+                }
+            }
+    
+            foreach ($contact['relations'] as $c) {
+                foreach ($c->getInfos() as $i) {
+                    if($i->getType() != 'Mobile')
+                        continue;
+                    
+                    if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                        $c->setMobile($i->getValue());
+                        break;
+                    }else{
+                        $c->setMobile($i->getValue());
+                    }
+                }
+    
+                foreach ($c->getInfos() as $i) {
+                    if($i->getType() != 'Email')
+                        continue;
+                    
+                    if($i->getType() == 'Email' && $i->getStatus() == 1){
+                        $c->setEmail($i->getValue());
+                        break;
+                    }else{
+                        $c->setEmail($i->getValue());
+                    }
+                }
+            }
+        }
+
+        
     }
 }

@@ -99,4 +99,37 @@ class CategoryRepository extends ServiceEntityRepository
         dump($categories);
         die();  
     }
+
+    public function getParentDetails($id){
+
+        $parente = $query = $this->getEntityManager()->createQuery(
+            "SELECT c
+            FROM App\Entity\Category c
+            WHERE c.id = $id"
+        )->getOneOrNullResult();
+
+        $right = $parente->getRgt();
+        $left = $parente->getLft();
+
+        $categories = $this->getEntityManager()->createQueryBuilder()->select('cat')
+                        ->from('App\Entity\Category', 'cat')
+                        ->where('cat.lft >= :lft AND cat.rgt <= :rgt AND cat.lvl = 5')
+                        ->setParameter('lft', $left)
+                        ->setParameter('rgt', $right)
+                        ->getQuery()
+                        ->getResult();
+
+        $contacts = $this->getEntityManager()->createQueryBuilder()->select('count(c.id)')
+                        ->from('App\Entity\Contact', 'c')
+                        ->where('c.category IN (:ids)')
+                        ->setParameter('ids', $categories)
+                        ->getQuery()->getSingleScalarResult();
+        
+        return array(
+            'contacts' => (int) $contacts,
+            'categories' => sizeof($categories)
+        );
+        dump(sizeof($categories), $contacts);
+        die();  
+    }
 }

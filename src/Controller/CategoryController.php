@@ -50,7 +50,8 @@ class CategoryController extends Controller
     {
 
         $categoryRepository = $this->getDoctrine()->getRepository(Category::class);
-        $categories = $categoryRepository->findBy(array('lvl' => $lvl, 'parent' => $id));
+        $array['categories'] = $categoryRepository->findBy(array('lvl' => $lvl, 'parent' => $id));
+        $array['details'] = $categoryRepository->getParentDetails($id);
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
@@ -63,7 +64,7 @@ class CategoryController extends Controller
         $normalizers = array($normalizer);
         $serializer = new Serializer($normalizers, $encoders);
 
-        $jsonContent = $serializer->serialize($categories, 'json');
+        $jsonContent = $serializer->serialize($array, 'json');
         $response = new Response($jsonContent);
         $response->headers->set('Content-Type', 'application/json');
         return $response;
