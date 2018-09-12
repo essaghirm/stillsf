@@ -19,13 +19,7 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function insertCategory($parent_id, $title, $old_id){
-
-        // $parent = $this->createQueryBuilder('c')
-        //     ->andWhere('c.id = :val')
-        //     ->setParameter('val', $parent_id)
-        //     ->getQuery()
-        //     ->getOneOrNullResult();
+    public function insertCategory($parent_id, $title, $old_id = null){
 
         $entityManager = $this->getEntityManager();
 
@@ -36,9 +30,6 @@ class CategoryRepository extends ServiceEntityRepository
         )->setParameter('id', $parent_id)
         ->setMaxResults(1);
         $parent = $query->getOneOrNullResult();
-
-        // dump($parent);
-        // die();
 
         $updateRight = $entityManager->createQuery(
             'UPDATE App\Entity\Category c
@@ -59,7 +50,7 @@ class CategoryRepository extends ServiceEntityRepository
         $category->setLft($parent['rgt']);
         $category->setRgt($parent['rgt']+1);
         $category->setLvl($parent['lvl']+1);
-        $category->setOldId($old_id);
+        // $category->setOldId($old_id);
         $category->setParent($entityManager->getRepository(Category::class)->find($parent_id));
 
         // dump($category);
@@ -102,18 +93,18 @@ class CategoryRepository extends ServiceEntityRepository
 
     public function getParentDetails($id){
 
-        $parente = $query = $this->getEntityManager()->createQuery(
+        $parent = $query = $this->getEntityManager()->createQuery(
             "SELECT c
             FROM App\Entity\Category c
             WHERE c.id = $id"
         )->getOneOrNullResult();
 
-        $right = $parente->getRgt();
-        $left = $parente->getLft();
+        $right = $parent->getRgt();
+        $left = $parent->getLft();
 
         $categories = $this->getEntityManager()->createQueryBuilder()->select('cat')
                         ->from('App\Entity\Category', 'cat')
-                        ->where('cat.lft >= :lft AND cat.rgt <= :rgt AND cat.lvl = 5')
+                        ->where('cat.lft > :lft AND cat.rgt < :rgt AND cat.lvl = 5')
                         ->setParameter('lft', $left)
                         ->setParameter('rgt', $right)
                         ->getQuery()
@@ -122,7 +113,9 @@ class CategoryRepository extends ServiceEntityRepository
         $contacts = $this->getEntityManager()->createQueryBuilder()->select('count(c.id)')
                         ->from('App\Entity\Contact', 'c')
                         ->where('c.category IN (:ids)')
+                        ->orWhere('c.category = :parent')
                         ->setParameter('ids', $categories)
+                        ->setParameter('parent', $parent)
                         ->getQuery()->getSingleScalarResult();
         
         return array(

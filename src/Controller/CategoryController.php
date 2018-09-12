@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -79,7 +80,9 @@ class CategoryController extends Controller
         $category = $this->getDoctrine()
         ->getRepository(Category::class)
         ->insertCategory($data['parent'], $data['title']);
-        return $this->redirectToRoute('category_show', array('id' => $category->getId()));
+        return $this->forward('App\Controller\CategoryController::show', array(
+            'id'  => $category->getId()
+        ));
     }
 
     /**
@@ -90,7 +93,7 @@ class CategoryController extends Controller
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('contacts', 'parent', 'children'));
+        $normalizer->setIgnoredAttributes(array('contacts', 'children'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {
@@ -106,23 +109,17 @@ class CategoryController extends Controller
     }
 
     /**
-     * @Route("/{id}/edit", name="category_edit", methods="GET|POST")
+     * @Route("/{id}", name="category_edit", methods="PUT")
      */
     public function edit(Request $request, Category $category): Response
     {
-        $form = $this->createForm(CategoryType::class, $category);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('category_edit', ['id' => $category->getId()]);
-        }
-
-        return $this->render('category/edit.html.twig', [
-            'category' => $category,
-            'form' => $form->createView(),
-        ]);
+        $data = json_decode($request->getContent(), true);
+        $category->setTitle($data['title']);
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+        return $this->forward('App\Controller\CategoryController::show', array(
+            'id'  => $category->getId()
+        ));
     }
 
     /**
