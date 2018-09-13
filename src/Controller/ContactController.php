@@ -23,6 +23,11 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
  */
 class ContactController extends Controller
 {
+
+    public function test(ContactRepository $contactRepository): Response
+    {
+        return new Response('ok');
+    }
     /**
      * @Route("/p/{p}", name="contact_index", methods="GET")
      */

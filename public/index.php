@@ -14,7 +14,8 @@ if (!isset($_SERVER['APP_ENV'])) {
     }
     (new Dotenv())->load(__DIR__.'/../.env');
 }
-
+// $_SERVER['APP_ENV'] = 'prod';
+// $_SERVER['DATABASE_URL'] = 'mysql://root:@127.0.0.1:3306/stillsf';
 $env = $_SERVER['APP_ENV'] ?? 'dev';
 $debug = (bool) ($_SERVER['APP_DEBUG'] ?? ('prod' !== $env));
 
