@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 /**
  * @Route("/contact")
@@ -28,6 +29,42 @@ class ContactController extends Controller
     {
         return new Response('ok');
     }
+
+    /**
+     * @Route("/{id}/upload/avatar", name="contact_upload", methods="POST")
+     */
+    public function upload(Request $request, Contact $contact): Response
+    {
+        $array = [
+            'message' => false
+        ];
+
+        $data = json_decode($request->getContent(), true);
+        if($data['file']){
+            $imageData = $data['file'];
+            $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
+            $imageData = str_replace('data:image/jpg;base64,', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            $imageData = base64_decode($imageData);
+
+            $time = new \DateTime();
+            $fname = $contact->getId().'-'.$time->getTimestamp().'.jpg'; //.'-'.$date->getTimestamp();
+            file_put_contents('avatar/'.$fname, $imageData);
+            // dump($imageData);
+
+            $contact->setAvatar($fname);
+            
+            $em = $this->getDoctrine()->getManager()->flush();        
+            $array['message'] = true;
+            $array['avatar'] = 'avatar/'.$fname;
+
+            return new JsonResponse($array);
+        }
+
+        return new JsonResponse($array);
+    }
+
+
     /**
      * @Route("/p/{p}", name="contact_index", methods="GET")
      */
