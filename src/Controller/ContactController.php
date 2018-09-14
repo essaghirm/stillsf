@@ -25,9 +25,27 @@ use Symfony\Component\Validator\Constraints\DateTime;
 class ContactController extends Controller
 {
 
-    public function test(ContactRepository $contactRepository): Response
+    /**
+     * @Route("/move/{category_id}", name="contact_move", methods="POST")
+     */
+    public function move(Request $request, ContactRepository $contactRepository, $category_id): Response
     {
-        return new Response('ok');
+        $array = [
+            'message' => false
+        ];
+
+        $data = json_decode($request->getContent(), true);
+        $contacts = $contactRepository->findBy(array(
+            'id' => $data
+        ));
+        $category = $this->getDoctrine()->getRepository(Category::class)->find($category_id);
+        foreach ($contacts as $c) {
+            $c->setCategory($category);
+        }
+        $this->getDoctrine()->getManager()->flush();
+        $array['message'] = true;
+
+        return new JsonResponse($array);
     }
 
     /**
@@ -365,10 +383,9 @@ class ContactController extends Controller
         }
 
         if($searchType != 'triangle'){
-            $this->getDefaultInfo($result['contacts']);
+            $result['contacts'] = $this->getDefaultInfo($result['contacts']);
         }
         
-
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
@@ -409,7 +426,7 @@ class ContactController extends Controller
                 if($i->getType() != 'Mobile')
                     continue;
                 
-                if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                if($i->getStatus() == true){
                     $c->setMobile($i->getValue());
                     break;
                 }else{
@@ -421,7 +438,7 @@ class ContactController extends Controller
                 if($i->getType() != 'Email')
                     continue;
                 
-                if($i->getType() == 'Email' && $i->getStatus() == 1){
+                if($i->getStatus() == true){
                     $c->setEmail($i->getValue());
                     break;
                 }else{
@@ -429,6 +446,8 @@ class ContactController extends Controller
                 }
             }
         }
+
+        return $contacts;
     }
 
     private function getDefaultInfoForTriangle($contacts){
