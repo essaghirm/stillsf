@@ -58,7 +58,8 @@ class InfoController extends Controller
                
         $form = $this->createForm(InfoType::class, $info);
         $form->submit($data);
-        $info->setContact($this->getDoctrine()->getRepository(Contact::class)->find($data['contact_id']));
+
+        // $info->setContact($this->getDoctrine()->getRepository(Contact::class)->find($data['contact_id']));
 
         $_infos = $this->getDoctrine()->getRepository(Info::class)->findBy(array(
             'contact' => $info->getContact(),
@@ -75,6 +76,10 @@ class InfoController extends Controller
             $info->setStatus(false);
         }
 
+
+        // dump($info);
+        // die;
+
         $errors = $validator->validate($info);
 
         if (count($errors) > 0) {
@@ -89,7 +94,7 @@ class InfoController extends Controller
         // die('ok');
 
         return $this->forward('App\Controller\ContactController::show', array(
-            'id'  => $data['contact_id']
+            'id'  => $data['contact']
         ));
     }
 

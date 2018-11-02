@@ -77,9 +77,7 @@ class CategoryController extends Controller
     public function new(Request $request): Response
     {
         $data = json_decode($request->getContent(), true); 
-        $category = $this->getDoctrine()
-        ->getRepository(Category::class)
-        ->insertCategory($data['parent'], $data['title']);
+        $category = $this->getDoctrine()->getRepository(Category::class)->insertCategory($data['parent'], $data['title']);
         return $this->forward('App\Controller\CategoryController::show', array(
             'id'  => $category->getId()
         ));
@@ -125,14 +123,26 @@ class CategoryController extends Controller
     /**
      * @Route("/{id}", name="category_delete", methods="DELETE")
      */
-    public function delete(Request $request, Category $category): Response
+    public function delete(Request $request,CategoryRepository $categoryRepository, Category $category): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$category->getId(), $request->request->get('_token'))) {
-            $em = $this->getDoctrine()->getManager();
-            $em->remove($category);
-            $em->flush();
-        }
+        $left = $category->getLft();
+        $lvl = $category->getLvl();
+        $parent_id = $category->getParent()->getId();
+        // dump($parent_id, $left, $lvl, $category);
 
-        return $this->redirectToRoute('category_index');
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($category);
+        $em->flush();
+
+        $result = $this->getDoctrine()->getRepository(Category::class)->updateAfterRemoveCategory($left);
+        return $this->forward('App\Controller\CategoryController::byLvl', array(
+            'id'  => $parent_id,
+            'lvl' => $lvl
+        ));
+        // die;
+
+        // $em = $this->getDoctrine()->getManager();
+        // $em->remove($category);
+        // $em->flush();
     }
 }

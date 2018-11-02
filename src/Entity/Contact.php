@@ -111,7 +111,7 @@ class Contact
         return $this->fname;
     }
 
-    public function setFname(string $fname)
+    public function setFname($fname)
     {
         $this->fname = $fname;
 
@@ -147,7 +147,7 @@ class Contact
         return $this->city;
     }
 
-    public function setCity(string $city)
+    public function setCity($city)
     {
         $this->city = $city;
 
@@ -171,7 +171,7 @@ class Contact
         return $this->type;
     }
 
-    public function setType(string $type)
+    public function setType($type)
     {
         $this->type = $type;
 

@@ -4,15 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Category;
 use App\Entity\Contact;
-use App\Entity\CatCont;
-use App\Entity\OldCategory;
-use App\Form\CategoryType;
+use App\Entity\Relation;
 use App\Repository\CategoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -23,60 +23,133 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 class DiagnosticController extends Controller
 {
     /**
-     * @Route("/", name="category_setup", methods="GET")
+     * @Route("/contact_without_company", name="contact_without_company", methods="GET")
      */
-    public function index(CategoryRepository $categoryRepository): Response
-    {
-        $categoryRepository = $this->getDoctrine()->getRepository(Category::class);
-        $oldCategoryRepository = $this->getDoctrine()->getRepository(OldCategory::class);
-        $old1 = $oldCategoryRepository->findBy(array('table' => 4));
-        dump(sizeof($old1));
-        // die();
+    public function contact_without_company(){
+        $em = $this->getDoctrine()->getManager();
+        $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
 
-        foreach ($old1 as $old) {
-            $parent = $categoryRepository->findBy(array('lvl' => $old->getTable(), 'old_id' => $old->getParent()));
+        $relations = $contactRepo->getRelations11();
 
-            dump($parent[0]->getId().' - '.$old->getOldId().' - '.$old->getTitle());
-            // dump($parent);
-            $categoryRepository->insertCategory($parent[0]->getId(), $old->getTitle(), $old->getOldId());
-
+        $contact_with_company = [];
+        foreach ($relations as $r) {
+            if($r->getFriend()->getType() == 'company'){
+                array_push($contact_with_company, $r->getContact());
+            }else{
+                array_push($contact_with_company, $r->getFriend());
+            }
         }
-        
 
-        // $categoryRepository->insertCategory();
-        dump('ok');
-        die();
+
+        $contact_without_company = $contactRepo->createQueryBuilder('c')
+                                    ->where("c.id NOT IN (:contact_with_company) AND c.type LIKE 'contact'")
+                                    ->setParameter('contact_with_company', $contact_with_company)
+                                    ->getQuery()->getResult();
+
+        return $this->toJson($contact_without_company, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 
     /**
-     * @Route("/cat_to_contact", name="category_to_contact", methods="GET")
+     * @Route("/contacts_double_name", name="contacts_double_name", methods="GET")
      */
-    public function cat_to_contact(CategoryRepository $categoryRepository): Response
-    {
-        // $em = $this->getDoctrine();
-        // $categoryRepo = $em->getRepository(Category::class);
-        // $contactRepo = $em->getRepository(Contact::class);
-        // $catContRepo = $em->getRepository(CatCont::class);
-        // $contacts = $contactRepo->findAll();
-        // dump(sizeof($contacts));
-        // // die();
-
-        // foreach ($contacts as $c) {
-        //     $old_cat = $catContRepo->findBy(array('contact' => $c->getId()));
-        //     if($old_cat){
-        //         $new_cat = $categoryRepo->findBy(array('lvl' => 5, 'old_id' => $old_cat[0]->getCategory()));
-        //         dump($c->getId() .' -- '. $old_cat[0]->getCategory() .' -- '. $new_cat[0]->getTitle());
-        //         $c->setCategory($new_cat[0]);
-        //     }
-        // }
-
-        // $em->getManager()->flush();
-
-
-
-        // $categoryRepository->insertCategory();
-        dump('ok');
-        die();
+    public function contacts_double_name(){
+        $em = $this->getDoctrine()->getManager();
+        
+        $RAW_QUERY = "SELECT c.id, c.lname, c.fname, COUNT(*) as nbr FROM Contact c WHERE c.type LIKE 'contact' GROUP BY c.lname, c.fname HAVING COUNT(*) > 1;";
+        
+        $statement = $em->getConnection()->prepare($RAW_QUERY);
+        $statement->execute();
+        $contacts = $statement->fetchAll();
+        return $this->toJson($contacts, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 
+    /**
+     * @Route("/company_double_name", name="company_double_name", methods="GET")
+     */
+    public function company_double_name(){
+        $em = $this->getDoctrine()->getManager();
+        
+        $RAW_QUERY = "SELECT c.id, c.lname, COUNT(*) as nbr FROM Contact c WHERE c.type LIKE 'company' GROUP BY c.lname HAVING COUNT(*) > 1;";
+        
+        $statement = $em->getConnection()->prepare($RAW_QUERY);
+        $statement->execute();
+        $contacts = $statement->fetchAll();
+        return $this->toJson($contacts, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+    }
+
+    //
+
+    /**
+     * @Route("/contact_double_email", name="contact_double_email", methods="GET")
+     */
+    public function contact_double_email(){
+        $em = $this->getDoctrine()->getManager();
+        
+        $RAW_QUERY = "SELECT i.*
+                        FROM info i
+                        JOIN (SELECT value, COUNT(*)
+                        FROM info 
+                        GROUP BY value
+                        HAVING count(*) > 1 ) v
+                        ON i.value = v.value
+                        WHERE i.`type` LIKE 'Email'
+                        ORDER BY i.value;";
+        
+        $statement = $em->getConnection()->prepare($RAW_QUERY);
+        $statement->execute();
+        $infos = $statement->fetchAll();
+        return $this->toJson($infos, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+    }
+
+    /**
+     * @Route("/contact_double_phone", name="contact_double_phone", methods="GET")
+     */
+    public function contact_double_phone(){
+        $em = $this->getDoctrine()->getManager();
+        
+        $RAW_QUERY = "SELECT i.*
+                        FROM info i
+                        JOIN (SELECT value, COUNT(*)
+                        FROM info 
+                        GROUP BY value
+                        HAVING count(*) > 1 ) v
+                        ON i.value = v.value
+                        WHERE i.`type` LIKE 'Phone'
+                        ORDER BY i.value;";
+        
+        $statement = $em->getConnection()->prepare($RAW_QUERY);
+        $statement->execute();
+        $infos = $statement->fetchAll();
+        return $this->toJson($infos, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+    }
+
+    /**
+     * @Route("/contact_category_incoherent_with_their_companies", name="contact_category_incoherent_with_their_companies", methods="GET")
+     */
+    public function contact_category_incoherent_with_their_companies(){
+        $em = $this->getDoctrine()->getManager();
+        $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
+        $contacts = $contactRepo->getConComCat();
+        return $this->toJson($contacts, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+    }
+
+
+    public function toJson($objects, $ignoredAttributes = null){
+        $encoders = array(new JsonEncoder());
+        $normalizer = new ObjectNormalizer();
+        $normalizer->setCircularReferenceLimit(0);
+        $normalizer->setIgnoredAttributes($ignoredAttributes);
+
+        // Add Circular reference handler
+        $normalizer->setCircularReferenceHandler(function ($object) {
+            // return $object->getId();
+        });
+        $normalizers = array($normalizer);
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $jsonContent = $serializer->serialize($objects, 'json');
+        $response = new Response($jsonContent);
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
 }

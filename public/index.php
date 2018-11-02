@@ -1,5 +1,6 @@
 <?php
-
+// echo phpinfo();
+// die;
 use App\Kernel;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\Dotenv\Dotenv;
@@ -15,7 +16,7 @@ if (!isset($_SERVER['APP_ENV'])) {
     (new Dotenv())->load(__DIR__.'/../.env');
 }
 // $_SERVER['APP_ENV'] = 'prod';
-// $_SERVER['DATABASE_URL'] = 'mysql://root:@127.0.0.1:3306/stillsf';
+$_SERVER['DATABASE_URL'] = 'mysql://agencema_cmma_user:]Tn&oxmNTjK}@127.0.0.1:3306/agencema_cmma_db';
 $env = $_SERVER['APP_ENV'] ?? 'dev';
 $debug = (bool) ($_SERVER['APP_DEBUG'] ?? ('prod' !== $env));
 
@@ -24,6 +25,8 @@ if ($debug) {
 
     Debug::enable();
 }
+
+$_SERVER['TRUSTED_PROXIES'] = "105.156.31.12";
 
 if ($trustedProxies = $_SERVER['TRUSTED_PROXIES'] ?? false) {
     Request::setTrustedProxies(explode(',', $trustedProxies), Request::HEADER_X_FORWARDED_ALL ^ Request::HEADER_X_FORWARDED_HOST);

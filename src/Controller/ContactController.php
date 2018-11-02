@@ -74,7 +74,7 @@ class ContactController extends Controller
             
             $em = $this->getDoctrine()->getManager()->flush();        
             $array['message'] = true;
-            $array['avatar'] = 'avatar/'.$fname;
+            $array['avatar'] = 'http://cmma.agence360.ma/stillsf/public/avatar/'.$fname;
 
             return new JsonResponse($array);
         }
@@ -164,10 +164,15 @@ class ContactController extends Controller
     public function show(Contact $contact): Response
     {
         $return = [];
+        $avatar = ($contact->getAvatar() != null) ? 'http://cmma.agence360.ma/stillsf/public/avatar/'.$contact->getAvatar() : $contact->getAvatar();
+        $contact->setAvatar($avatar);
         $return['contact'] = $contact;
         $return['relations'] = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
         $return['categories'] = $this->getDoctrine()->getRepository(Contact::class)->getCategories($contact->getCategory()->getId());
 
+        if($return['relations'] == null){
+            $return['relations'] = array('contacts' => [], 'companies' => []);
+        }
 
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
@@ -263,6 +268,22 @@ class ContactController extends Controller
         return new JsonResponse("ok");
     }
 
+
+    /**
+     * @Route("/{id}/avatar", name="contact_delete_avatar", methods="DELETE")
+     */
+    public function deleteAvatar(Request $request, Contact $contact): Response
+    {
+        // 6-1537877910.jpg
+        $contact->setAvatar(null);
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
+
+        return new JsonResponse("ok");
+    }
+
+
+
     /**
      * @Route("/relation/{contact}/{friend}", name="contact_delete_relation", methods="DELETE")
      */
@@ -278,19 +299,40 @@ class ContactController extends Controller
     }
 
     /**
-     * @Route("/search/{type}/{value}", name="relation_search", methods="GET")
+     * @Route("/search/{id}/{type}/{value}", name="relation_search", methods="GET")
      */
-    public function searchRelations($type, $value): Response
+    public function searchRelations(Contact $contact, $type, $value): Response
     {
         $em = $this->getDoctrine()->getManager();
+        $existRel = $this->getDoctrine()->getRepository(Contact::class)->getRelations($contact->getId());
+
+        $exist_ids = [$contact->getId()];
+
+        if(is_array($existRel)){
+            foreach ($existRel['contacts'] as $c) {
+            array_push($exist_ids, $c['contact']->getId());
+            }
+            foreach ($existRel['companies'] as $c) {
+                array_push($exist_ids, $c['contact']->getId());
+            }
+        }
+        
+
+        // dump($exist_ids); die;
+
+
+
+
+
         $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
         if(is_numeric($value)){
             $result = $contactRepo->createQueryBuilder('c')
             ->where('c.id LIKE :id')
-            ->andWhere('c.type LIKE :type')
+            ->andWhere('c.type LIKE :type AND c.id NOT IN (:existRelations)')
             ->orderBy('c.id', 'ASC')
             ->setParameter('id', $value.'%')
             ->setParameter('type', $type)
+            ->setParameter('existRelations', $exist_ids)
             ->getQuery()
             ->getResult();
         }else{
@@ -303,12 +345,13 @@ class ContactController extends Controller
                 ->where('c.fname LIKE :value OR c.lname like :value')
                 ->orWhere('c.lname like :n1 AND c.fname like :n2')
                 ->orWhere('c.fname like :n1 AND c.lname like :n2')
-                ->andWhere('c.type LIKE :type')
+                ->andWhere('c.type LIKE :type AND c.id NOT IN (:existRelations)')
                 ->orderBy('c.id', 'ASC')
                 ->setParameter('value', $value.'%')
                 ->setParameter('n1', $name[0].'%')
                 ->setParameter('n2', $name[1].'%')
                 ->setParameter('type', $type)
+                ->setParameter('existRelations', $exist_ids)
                 ->getQuery()
                 ->getResult();
             }else{
@@ -316,10 +359,11 @@ class ContactController extends Controller
                 ->where('c.fname LIKE :value')
                 ->orWhere('c.lname like :value')
                 ->orWhere('c.fname like :value')
-                ->andWhere('c.type LIKE :type')
+                ->andWhere('c.type LIKE :type AND c.id NOT IN (:existRelations)')
                 ->orderBy('c.id', 'ASC')
                 ->setParameter('value', $value.'%')
                 ->setParameter('type', $type)
+                ->setParameter('existRelations', $exist_ids)
                 ->getQuery()
                 ->getResult();
             }
@@ -329,7 +373,7 @@ class ContactController extends Controller
         $encoders = array(new JsonEncoder());
         $normalizer = new ObjectNormalizer();
         $normalizer->setCircularReferenceLimit(0);
-        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'created', 'category'));
+        $normalizer->setIgnoredAttributes(array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
 
         // Add Circular reference handler
         $normalizer->setCircularReferenceHandler(function ($object) {
@@ -423,7 +467,7 @@ class ContactController extends Controller
 
         foreach ($contacts as $c) {
             foreach ($c->getInfos() as $i) {
-                if($i->getType() != 'Mobile')
+                if($i->getType() != 'Phone')
                     continue;
                 
                 if($i->getStatus() == true){
@@ -454,10 +498,10 @@ class ContactController extends Controller
 
         foreach ($contacts as $contact) {
             foreach ($contact['contact']->getInfos() as $i) {
-                if($i->getType() != 'Mobile')
+                if($i->getType() != 'Phone')
                     continue;
                 
-                if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                if($i->getType() == 'Phone' && $i->getStatus() == 1){
                     $contact['contact']->setMobile($i->getValue());
                     break;
                 }else{
@@ -479,10 +523,10 @@ class ContactController extends Controller
     
             foreach ($contact['relations'] as $c) {
                 foreach ($c->getInfos() as $i) {
-                    if($i->getType() != 'Mobile')
+                    if($i->getType() != 'Phone')
                         continue;
                     
-                    if($i->getType() == 'Mobile' && $i->getStatus() == 1){
+                    if($i->getType() == 'Phone' && $i->getStatus() == 1){
                         $c->setMobile($i->getValue());
                         break;
                     }else{

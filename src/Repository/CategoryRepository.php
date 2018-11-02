@@ -62,9 +62,25 @@ class CategoryRepository extends ServiceEntityRepository
         return $category;
     }
 
-    public function deleteCategory($id)
+    public function updateAfterRemoveCategory($lft)
     {
-        # code...
+        $entityManager = $this->getEntityManager();
+
+        $updateLeft = $entityManager->createQuery(
+            'UPDATE App\Entity\Category c
+            SET c.lft = c.lft - 2
+            WHERE c.lft >= :lft'
+        )->setParameter('lft', $lft)
+        ->execute();
+
+        $updateRight = $entityManager->createQuery(
+            'UPDATE App\Entity\Category c
+            SET c.rgt = c.rgt - 2
+            WHERE c.rgt >= :lft'
+        )->setParameter('lft', $lft)
+        ->execute();
+
+        return true;
     }
 
     /**

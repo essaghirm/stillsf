@@ -42,33 +42,30 @@ class ContactRepository extends ServiceEntityRepository
             return null;
         }
 
-        $ids = [];
+        // dump($friends);die;
+
+        $rel_array = ['contacts' => [], 'companies' => []];
 
         foreach ($friends as $k => $f) {
             if($f->getFriend()->getId() == $value){
-                $ids[] = $f->getContact()->getId(); 
+                if($f->getContact()->getType() == 'contact'){
+                    array_push(
+                        $rel_array['contacts'],array('contact' => $f->getContact(), 'occupation' => $f->getOccupation()));
+                }else{
+                    array_push(
+                        $rel_array['companies'],array('contact' => $f->getContact(), 'occupation' => $f->getOccupation()));
+                }
             }else{
-               $ids[] = $f->getFriend()->getId();   
+               if($f->getFriend()->getType() == 'contact'){
+                    array_push($rel_array['contacts'], array('contact' => $f->getFriend(), 'occupation' => $f->getOccupation()));
+                }else{
+                    array_push($rel_array['companies'], array('contact' => $f->getFriend(), 'occupation' => $f->getOccupation()));
+                }
             }       
-        }
-        $ids = '('.implode(',', $ids).')';
+        }      
 
-        // echo $ids;
-        // die();
-
-        $contacts = $this->getEntityManager()->createQuery(
-            "SELECT c
-            FROM App\Entity\Contact c
-            WHERE c.id IN $ids and c.type like 'contact'"
-        )->getResult();
-
-        $companies = $this->getEntityManager()->createQuery(
-            "SELECT c
-            FROM App\Entity\Contact c
-            WHERE c.id IN $ids and c.type like 'company'"
-        )->getResult();
-
-        return array('contacts' => $contacts, 'companies' => $companies);
+        // $return = array('contacts' => $contacts, 'companies' => $companies);
+        return $rel_array;
     }
 
     public function deleteRelationForContact($id){
@@ -212,10 +209,9 @@ class ContactRepository extends ServiceEntityRepository
         $infos = $this->getEntityManager()->createQueryBuilder()->select('i')
                     ->from('App\Entity\Info', 'i')
                     ->where('i.value like :number')
-                    ->andWhere('i.type like :mobile OR i.type like :landline')
+                    ->andWhere('i.type like :type')
                     ->setParameter('number', '%) '.$number.'%')
-                    ->setParameter('mobile', 'Mobile')
-                    ->setParameter('landline', 'LAndLine')
+                    ->setParameter('type', 'Phone')
                     ->getQuery()
                     ->getResult();
 
@@ -289,9 +285,9 @@ class ContactRepository extends ServiceEntityRepository
             ->orWhere('c.fname like :n1 AND c.lname like :n2')
             // ->andWhere('c.type LIKE :type')
             ->orderBy('c.lname', 'ASC')
-            ->setParameter('value', $value.'%')
-            ->setParameter('n1', $name[0].'%')
-            ->setParameter('n2', $name[1].'%');
+            ->setParameter('value', '%'.$value.'%')
+            ->setParameter('n1', '%'.$name[0].'%')
+            ->setParameter('n2', '%'.$name[1].'%');
             if($categories != null){
                 $result->andWhere('c.category IN (:ids)')
                         ->setParameter('ids', $categories);
@@ -313,7 +309,7 @@ class ContactRepository extends ServiceEntityRepository
             ->orWhere('c.lname like :value')
             ->orWhere('c.fname like :value')
             ->orderBy('c.id', 'ASC')
-            ->setParameter('value', $value.'%');
+            ->setParameter('value', '%'.$value.'%');
             if($categories != null){
                 $result->andWhere('c.category IN (:ids)')
                         ->setParameter('ids', $categories);
@@ -478,5 +474,71 @@ class ContactRepository extends ServiceEntityRepository
         // dump($array);die;
 
         return $array;
+    }
+
+
+    public function getRelations11(){
+        $contacts = $this->findBy(array('type' => 'contact'));
+        $companies = $this->findBy(array('type' => 'company'));
+
+        return $this->getEntityManager()->createQueryBuilder()->select('r')
+                    ->from('App\Entity\Relation', 'r')
+                    ->where("r.contact IN (:companies) AND r.friend IN (:contacts)")
+                    ->orWhere("r.contact IN (:contacts) AND r.friend IN (:companies)")
+                    ->setParameter('contacts', $contacts)
+                    ->setParameter('companies', $companies)
+                    ->getQuery()
+                    ->getResult();
+    }
+
+    public function getConComCat()
+    {
+        $contacts = $this->findBy(array('type' => 'contact'));
+        dump($contacts);die;
+        $array = [];
+        // foreach ($contacts as $c) {
+        //     $ok = false;
+        //     $companies = $this->getConComCat($c->getId());
+        //     foreach ($companies as $cp) {
+        //         if($c->getCategoy()->getId() == $cp->getCategoy()->getId()){
+        //             $ok = true;
+        //             break;
+        //         }
+        //     }
+        //     if($ok == false){
+        //         array_push($array, $c);
+        //     }
+        // }
+
+        // return $array;
+
+    }
+
+    public function getContactCompanies($contact)
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        $companies = $qb->select('r')
+            ->from('App\Entity\Relation', 'r')
+            ->innerJoin('App\Entity\Contact', 'c')
+            ->andWhere("r.contact = :val OR r.friend = :val AND r.type LIKE 'Company'")
+            ->setParameter('val', $value)
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+            dump($companies);die;
+
+        // $companies = $qb->select('c')
+        //     ->from('App\Entity\Contact', 'c')
+        //     ->innerJoin('App\Entity\Relation', 'r')
+        //     ->andWhere("r.contact = :val OR r.friend = :val AND c.type LIKE 'Contact' ")
+        //     ->setParameter('val', $value)
+        //     ->orderBy('c.id', 'ASC')
+        //     ->getQuery()
+        //     ->getResult(); 
+
+        // $return = array('contacts' => $contacts, 'companies' => $companies);
+        return $companies;
     }
 }

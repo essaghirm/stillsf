@@ -1,5 +1,7 @@
 php bin/console doctrine:database:create
 
+php bin/console debug:router
+
 Creating an Entity Class:
 -------------------------
 	php bin/console doctrine:database:drop --force

@@ -1,0 +1,76 @@
+[14-Sep-2018 17:03:52 UTC] PHP Warning:  Uncaught Symfony\Component\Debug\Exception\ContextErrorException: Warning: require(/home2/agencema/public_html/cmma/stillsf/src/config/bundles.php): failed to open stream: No such file or directory in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php:30
+Stack trace:
+#0 /home2/agencema/public_html/cmma/stillsf/src/Kernel.php(30): require()
+#1 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(492): App\Kernel->registerBundles()
+#2 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(132): Symfony\Component\HttpKernel\Kernel->initializeBundles()
+#3 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(195): Symfony\Component\HttpKernel\Kernel->boot()
+#4 /home2/agencema/public_html/cmma/stillsf/public/index.php(41): Symfony\Component\HttpKernel\Kernel->handle(Object(Symfony\Component\HttpFoundation\Request))
+#5 {main}
+  thrown in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:03:52 UTC] PHP Fatal error:  App\Kernel::registerBundles(): Failed opening required '/home2/agencema/public_html/cmma/stillsf/src/config/bundles.php' (include_path='.:/opt/cpanel/ea-php71/root/usr/share/pear') in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:06:41 UTC] PHP Warning:  Uncaught Symfony\Component\Debug\Exception\ContextErrorException: Warning: require(/home2/agencema/public_html/cmma/stillsf/src../config/bundles.php): failed to open stream: No such file or directory in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php:30
+Stack trace:
+#0 /home2/agencema/public_html/cmma/stillsf/src/Kernel.php(30): require()
+#1 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(492): App\Kernel->registerBundles()
+#2 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(132): Symfony\Component\HttpKernel\Kernel->initializeBundles()
+#3 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(195): Symfony\Component\HttpKernel\Kernel->boot()
+#4 /home2/agencema/public_html/cmma/stillsf/public/index.php(41): Symfony\Component\HttpKernel\Kernel->handle(Object(Symfony\Component\HttpFoundation\Request))
+#5 {main}
+  thrown in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:06:41 UTC] PHP Fatal error:  App\Kernel::registerBundles(): Failed opening required '/home2/agencema/public_html/cmma/stillsf/src../config/bundles.php' (include_path='.:/opt/cpanel/ea-php71/root/usr/share/pear') in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:16:00 UTC] PHP Warning:  Uncaught Symfony\Component\Debug\Exception\ContextErrorException: Warning: require(/home2/agencema/public_html/cmma/stillsf/src/config/bundles.php): failed to open stream: No such file or directory in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php:30
+Stack trace:
+#0 /home2/agencema/public_html/cmma/stillsf/src/Kernel.php(30): require()
+#1 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(492): App\Kernel->registerBundles()
+#2 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(132): Symfony\Component\HttpKernel\Kernel->initializeBundles()
+#3 /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/Kernel.php(195): Symfony\Component\HttpKernel\Kernel->boot()
+#4 /home2/agencema/public_html/cmma/stillsf/public/index.php(41): Symfony\Component\HttpKernel\Kernel->handle(Object(Symfony\Component\HttpFoundation\Request))
+#5 {main}
+  thrown in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:16:00 UTC] PHP Fatal error:  App\Kernel::registerBundles(): Failed opening required '/home2/agencema/public_html/cmma/stillsf/src/config/bundles.php' (include_path='.:/opt/cpanel/ea-php71/root/usr/share/pear') in /home2/agencema/public_html/cmma/stillsf/src/Kernel.php on line 30
+[14-Sep-2018 17:28:23 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/debug/Exception/FlattenException.php on line 244
+[14-Sep-2018 17:44:46 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 589824 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2650
+[14-Sep-2018 17:45:04 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 589824 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2650
+[14-Sep-2018 18:13:18 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 589824 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2650
+[14-Sep-2018 20:49:26 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[16-Sep-2018 16:06:09 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 589824 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2650
+[16-Sep-2018 16:06:12 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Types/DateTimeType.php on line 73
+[18-Sep-2018 18:15:18 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 589824 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2650
+[18-Sep-2018 18:34:37 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 36864 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/var-dumper/Cloner/VarCloner.php on line 238
+[18-Sep-2018 18:40:49 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 147456 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2809
+[18-Sep-2018 18:41:16 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 53248 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[18-Sep-2018 19:15:18 UTC] PHP Fatal error:  Can't use method return value in write context in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 167
+[18-Sep-2018 19:16:30 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 40960 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/http-kernel/DataCollector/DataCollector.php on line 45
+[18-Sep-2018 19:52:57 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 53248 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[19-Sep-2018 08:04:07 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 28672 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[19-Sep-2018 12:40:50 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 53248 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[19-Sep-2018 13:08:08 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 32768 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[20-Sep-2018 17:07:10 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 1355776 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/twig-bridge/Extension/CodeExtension.php on line 146
+[21-Sep-2018 19:20:50 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 32768 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[21-Sep-2018 19:21:52 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 32768 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[21-Sep-2018 19:22:30 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[21-Sep-2018 19:22:31 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[21-Sep-2018 19:23:39 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 32768 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[24-Sep-2018 09:08:55 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[24-Sep-2018 09:08:56 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[24-Sep-2018 22:49:33 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 28672 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[27-Sep-2018 11:24:46 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2862
+[27-Sep-2018 13:35:37 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[27-Sep-2018 13:35:40 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[30-Sep-2018 13:11:07 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[30-Sep-2018 13:11:08 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[01-Oct-2018 11:36:31 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 28672 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[01-Oct-2018 11:37:27 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 53248 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[01-Oct-2018 11:37:30 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 53248 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[02-Oct-2018 16:36:16 UTC] PHP Fatal error:  Cannot redeclare App\Controller\ContactController::delete() in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 275
+[02-Oct-2018 16:36:17 UTC] PHP Fatal error:  Cannot redeclare App\Controller\ContactController::delete() in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 275
+[02-Oct-2018 16:36:50 UTC] PHP Fatal error:  Cannot redeclare App\Controller\ContactController::delete() in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 275
+[02-Oct-2018 16:37:32 UTC] PHP Fatal error:  Cannot redeclare App\Controller\ContactController::delete() in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 275
+[02-Oct-2018 16:37:48 UTC] PHP Fatal error:  Cannot redeclare App\Controller\ContactController::delete() in /home2/agencema/public_html/cmma/stillsf/src/Controller/ContactController.php on line 275
+[02-Oct-2018 17:26:36 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/debug/ExceptionHandler.php on line 366
+[02-Oct-2018 17:28:38 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 294912 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/UnitOfWork.php on line 2655
+[02-Oct-2018 17:29:08 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/orm/lib/Doctrine/ORM/Internal/Hydration/ObjectHydrator.php on line 269
+[02-Oct-2018 17:29:13 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 73728 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/symfony/serializer/Encoder/JsonEncode.php on line 39
+[02-Oct-2018 17:33:53 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 1294336 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[23-Oct-2018 16:19:57 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142
+[23-Oct-2018 16:23:37 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 835584 bytes) in /home2/agencema/public_html/cmma/stillsf/vendor/doctrine/dbal/lib/Doctrine/DBAL/Driver/PDOStatement.php on line 142

@@ -196,6 +196,22 @@ class UserController extends Controller
      */
     public function delete(Request $request, User $user): Response
     {
-        return true;
+    	$em = $this->getDoctrine()->getManager();
+        
+        $em->remove($user);
+        $em->flush();
+        return $this->forward('App\Controller\UserController::index');
+    }
+
+    /**
+     * @Route("/changeuserrole/{id}", name="user_changeuserrole", methods="POST")
+     */
+    public function changeuserrole(Request $request, User $user): Response
+    {
+    	$data = json_decode($request->getContent(), true);
+    	$user->setRoles($data['role']);
+    	$em = $this->getDoctrine()->getManager();
+        $em->flush();
+        return $this->forward('App\Controller\UserController::index');
     }
 }
