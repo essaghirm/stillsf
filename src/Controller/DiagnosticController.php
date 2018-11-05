@@ -55,7 +55,11 @@ class DiagnosticController extends Controller
     public function contacts_double_name(){
         $em = $this->getDoctrine()->getManager();
         
-        $RAW_QUERY = "SELECT c.id, c.lname, c.fname, COUNT(*) as nbr FROM Contact c WHERE c.type LIKE 'contact' GROUP BY c.lname, c.fname HAVING COUNT(*) > 1;";
+        $RAW_QUERY = "SELECT c.* FROM contact c
+                        JOIN (SELECT lname, fname, COUNT(*) as nbr FROM Contact WHERE type LIKE 'contact' GROUP BY lname, fname HAVING COUNT(*) > 1) c2
+                        ON c.lname = c2.lname AND c.fname = c2.fname
+                        WHERE c.`type` LIKE 'Contact'
+                        ORDER BY c.lname;";
         
         $statement = $em->getConnection()->prepare($RAW_QUERY);
         $statement->execute();
@@ -69,7 +73,11 @@ class DiagnosticController extends Controller
     public function company_double_name(){
         $em = $this->getDoctrine()->getManager();
         
-        $RAW_QUERY = "SELECT c.id, c.lname, COUNT(*) as nbr FROM Contact c WHERE c.type LIKE 'company' GROUP BY c.lname HAVING COUNT(*) > 1;";
+        $RAW_QUERY = "SELECT c.* FROM contact c
+                        JOIN (SELECT lname, COUNT(*) as nbr FROM Contact WHERE type LIKE 'company' GROUP BY lname HAVING COUNT(*) > 1) c2
+                        ON c.lname = c2.lname
+                        WHERE c.`type` LIKE 'company'
+                        ORDER BY c.lname;";
         
         $statement = $em->getConnection()->prepare($RAW_QUERY);
         $statement->execute();
@@ -77,13 +85,12 @@ class DiagnosticController extends Controller
         return $this->toJson($contacts, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 
-    //
-
     /**
      * @Route("/contact_double_email", name="contact_double_email", methods="GET")
      */
     public function contact_double_email(){
         $em = $this->getDoctrine()->getManager();
+        $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
         
         $RAW_QUERY = "SELECT i.*
                         FROM info i
@@ -98,7 +105,25 @@ class DiagnosticController extends Controller
         $statement = $em->getConnection()->prepare($RAW_QUERY);
         $statement->execute();
         $infos = $statement->fetchAll();
-        return $this->toJson($infos, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+
+        $contact_ids = [];
+        foreach ($infos as $i) {
+            array_push($contact_ids, $i['contact_id']);
+        }
+
+        $contacts = $contactRepo->createQueryBuilder('c')
+                                    ->where("c.id IN (:contact_ids)")
+                                    ->setParameter('contact_ids', $contact_ids)
+                                    ->getQuery()->getResult();
+        $contqct_array = [];
+        foreach ($contacts as $c){
+            foreach ($infos as $i) {
+                if($c->getId() == $i['contact_id'])
+                    array_push($contqct_array, ['contact' => $c, 'info' => $i['value']]);
+            }
+        }
+
+        return $this->toJson($contqct_array, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 
     /**
@@ -106,6 +131,7 @@ class DiagnosticController extends Controller
      */
     public function contact_double_phone(){
         $em = $this->getDoctrine()->getManager();
+        $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
         
         $RAW_QUERY = "SELECT i.*
                         FROM info i
@@ -120,16 +146,36 @@ class DiagnosticController extends Controller
         $statement = $em->getConnection()->prepare($RAW_QUERY);
         $statement->execute();
         $infos = $statement->fetchAll();
-        return $this->toJson($infos, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
+
+        $contact_ids = [];
+        foreach ($infos as $i) {
+            array_push($contact_ids, $i['contact_id']);
+        }
+
+        $contacts = $contactRepo->createQueryBuilder('c')
+                                    ->where("c.id IN (:contact_ids)")
+                                    ->setParameter('contact_ids', $contact_ids)
+                                    ->getQuery()->getResult();
+        $contqct_array = [];
+        foreach ($contacts as $c){
+            foreach ($infos as $i) {
+                if($c->getId() == $i['contact_id'])
+                    array_push($contqct_array, ['contact' => $c, 'info' => $i['value']]);
+            }
+        }
+
+        return $this->toJson($contqct_array, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 
     /**
      * @Route("/contact_category_incoherent_with_their_companies", name="contact_category_incoherent_with_their_companies", methods="GET")
      */
     public function contact_category_incoherent_with_their_companies(){
+        ini_set('max_execution_time', 300);
         $em = $this->getDoctrine()->getManager();
         $contactRepo = $this->getDoctrine()->getRepository(Contact::class);
         $contacts = $contactRepo->getConComCat();
+        // echo sizeof($contacts);
         return $this->toJson($contacts, array('myFriends', 'friendsWithMe', 'infos', 'created', 'category'));
     }
 

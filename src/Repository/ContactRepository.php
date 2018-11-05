@@ -494,51 +494,58 @@ class ContactRepository extends ServiceEntityRepository
     public function getConComCat()
     {
         $contacts = $this->findBy(array('type' => 'contact'));
-        dump($contacts);die;
         $array = [];
-        // foreach ($contacts as $c) {
-        //     $ok = false;
-        //     $companies = $this->getConComCat($c->getId());
-        //     foreach ($companies as $cp) {
-        //         if($c->getCategoy()->getId() == $cp->getCategoy()->getId()){
-        //             $ok = true;
-        //             break;
-        //         }
-        //     }
-        //     if($ok == false){
-        //         array_push($array, $c);
-        //     }
-        // }
+        foreach ($contacts as $c) {
+            $ok = false;
+            $ok = $this->getContactCompanies($c);
+            if($ok == true)
+                // dump($ok, $c->getId());
+                array_push($array, $c);
 
-        // return $array;
+        }
+
+        return $array;
 
     }
 
     public function getContactCompanies($contact)
     {
-        $qb = $this->getEntityManager()->createQueryBuilder();
+        $em = $this->getEntityManager();
 
-        $companies = $qb->select('r')
+        $relations = $em->createQueryBuilder()->select('r')
             ->from('App\Entity\Relation', 'r')
             ->innerJoin('App\Entity\Contact', 'c')
-            ->andWhere("r.contact = :val OR r.friend = :val AND r.type LIKE 'Company'")
-            ->setParameter('val', $value)
+            ->andWhere("r.contact = :val OR r.friend = :val")
+            ->setParameter('val', $contact->getId())
             ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
+            
 
-            dump($companies);die;
+        $companies_ids = [];
 
-        // $companies = $qb->select('c')
-        //     ->from('App\Entity\Contact', 'c')
-        //     ->innerJoin('App\Entity\Relation', 'r')
-        //     ->andWhere("r.contact = :val OR r.friend = :val AND c.type LIKE 'Contact' ")
-        //     ->setParameter('val', $value)
-        //     ->orderBy('c.id', 'ASC')
-        //     ->getQuery()
-        //     ->getResult(); 
+        foreach ($relations as $r) {
+            if($r->getContact()->getType() == 'company'){
+                array_push($companies_ids, $r->getContact());
+            }else{
+                array_push($companies_ids, $r->getFriend());
+            }
+        }
 
-        // $return = array('contacts' => $contacts, 'companies' => $companies);
-        return $companies;
+        $companies = $em->createQueryBuilder()->select('c')
+            ->from('App\Entity\Contact', 'c')
+            ->where('c.id IN (:companies_ids)')
+            ->setParameter('companies_ids', $companies_ids)
+            ->getQuery()
+            ->getResult();
+        // dump($contact->getCategory()->getId(), $companies);die;
+
+        foreach ($companies as $com) {
+            if($com->getCategory()->getId() == $contact->getCategory()->getId())
+                return false;
+        }
+        return true;
+
+        dump($companies);die;
     }
 }
